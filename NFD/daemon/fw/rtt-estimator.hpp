@@ -48,10 +48,10 @@ public:
   static Duration
   getInitialRtt(void)
   {
-    return time::seconds(1);
+    return time::milliseconds(30);
   }
 
-  RttEstimator(uint16_t maxMultiplier = 16,
+  RttEstimator(uint16_t maxMultiplier = 2,
                Duration minRto = time::milliseconds(1),
                double gain = 0.1);
 

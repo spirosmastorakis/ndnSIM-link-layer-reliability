@@ -60,6 +60,11 @@ ConsumerCbr::GetTypeId(void)
                     IntegerValue(std::numeric_limits<uint32_t>::max()),
                     MakeIntegerAccessor(&ConsumerCbr::m_seqMax), MakeIntegerChecker<uint32_t>())
 
+      .AddAttribute("StopTrafficTime", "Time at which the interest generation traffic is stopped",
+                    TimeValue(Time::Max()),
+                    MakeTimeAccessor(&ConsumerCbr::m_stopTime),
+                    MakeTimeChecker())
+
     ;
 
   return tid;
@@ -78,6 +83,19 @@ ConsumerCbr::~ConsumerCbr()
 {
   if (m_random)
     delete m_random;
+}
+
+void
+ConsumerCbr::StopTraffic()
+{
+  Simulator::Cancel(m_sendEvent);
+}
+
+void
+ConsumerCbr::StartApplication()
+{
+  Consumer::StartApplication();
+  Simulator::Schedule(m_stopTime, &ConsumerCbr::StopTraffic, this);
 }
 
 void

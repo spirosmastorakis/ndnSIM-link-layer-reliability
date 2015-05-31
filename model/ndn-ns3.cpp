@@ -18,16 +18,16 @@
  **/
 
 #include "ndn-ns3.hpp"
-
-#include <ndn-cxx/encoding/block.hpp>
-#include <ndn-cxx/interest.hpp>
-#include <ndn-cxx/data.hpp>
-
+#include "ns3/ndnSIM/model/ndn-common.hpp"
 #include "ndn-header.hpp"
 #include "../utils/ndn-ns3-packet-tag.hpp"
 
+using namespace std;
+//NS_LOG_COMPONENT_DEFINE("ndn.ndn-ns3");
+
 namespace ns3 {
 namespace ndn {
+
 
 template<class T>
 std::shared_ptr<const T>
@@ -48,6 +48,22 @@ Convert::FromPacket<Interest>(Ptr<Packet> packet);
 template std::shared_ptr<const Data>
 Convert::FromPacket<Data>(Ptr<Packet> packet);
 
+template std::shared_ptr<const LinkAck>
+Convert::FromPacket<LinkAck>(Ptr<Packet> packet);
+
+template std::shared_ptr<const LinkEcho>
+Convert::FromPacket<LinkEcho>(Ptr<Packet> packet);
+
+template std::shared_ptr<const LinkReply>
+Convert::FromPacket<LinkReply>(Ptr<Packet> packet);
+
+template std::shared_ptr<const LinkPbAck>
+Convert::FromPacket<LinkPbAck>(Ptr<Packet> packet);
+
+template std::shared_ptr<const RepeatRequest>
+Convert::FromPacket<RepeatRequest>(Ptr<Packet> packet);
+
+
 template<class T>
 Ptr<Packet>
 Convert::ToPacket(const T& pkt)
@@ -63,7 +79,7 @@ Convert::ToPacket(const T& pkt)
   else {
     packet = Create<Packet>();
   }
-
+//  std::cout << "Adding header" << endl;
   packet->AddHeader(header);
   return packet;
 }
@@ -74,16 +90,33 @@ Convert::ToPacket<Interest>(const Interest& packet);
 template Ptr<Packet>
 Convert::ToPacket<Data>(const Data& packet);
 
+template Ptr<Packet>
+Convert::ToPacket<LinkAck>(const LinkAck& packet);
+
+template Ptr<Packet>
+Convert::ToPacket<LinkEcho>(const LinkEcho& packet);
+
+template Ptr<Packet>
+Convert::ToPacket<LinkReply>(const LinkReply& packet);
+
+template Ptr<Packet>
+Convert::ToPacket<LinkPbAck>(const LinkPbAck& packet);
+
+template Ptr<Packet>
+Convert::ToPacket<RepeatRequest>(const RepeatRequest& packet);
+
 uint32_t
 Convert::getPacketType(Ptr<const Packet> packet)
 {
   uint8_t type;
   uint32_t nRead = packet->CopyData(&type, 1);
+//  std::cout << "nRead = " << nRead << " type = " << uint32_t(type) << std::endl;
+  
   if (nRead != 1) {
     throw ::ndn::tlv::Error("Unknown header");
   }
 
-  if (type == ::ndn::tlv::Interest || type == ::ndn::tlv::Data) {
+  if (type == ::ndn::tlv::Interest || type == ::ndn::tlv::Data || type == ::ndn::tlv::LinkAck || type == ::ndn::tlv::LinkEcho || type == ::ndn::tlv::LinkReply || type == ::ndn::tlv::LinkPbAck || type == ::ndn::tlv::RepeatRequest) {
     return type;
   }
   else {

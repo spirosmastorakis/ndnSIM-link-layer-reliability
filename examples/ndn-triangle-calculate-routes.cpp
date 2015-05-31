@@ -55,7 +55,8 @@ main(int argc, char* argv[])
         << "B1	    C1	10Mbps		1	1ms	100\n"
         << "A2	    B2	10Mbps		50	1ms	100\n"
         << "A2	    C2	10Mbps		100	1ms	100\n"
-        << "B2	    C2	10Mbps		1	1ms	100\n";
+        << "B2	    C2	10Mbps		1	1ms	100\n"
+        << "B1      B2  10Mbps    30 1ms 100\n";
   file1.close();
 
   AnnotatedTopologyReader topologyReader("");
@@ -82,6 +83,9 @@ main(int argc, char* argv[])
 
       bool isFirst = true;
       for (auto& nextHop : entry.getNextHops()) {
+        if (!isFirst)
+          cout << ", ";
+        
         cout << *nextHop.getFace();
         auto face = dynamic_pointer_cast<ndn::NetDeviceFace>(nextHop.getFace());
         if (face == nullptr)
@@ -89,9 +93,10 @@ main(int argc, char* argv[])
 
         cout << " towards ";
 
-        if (!isFirst)
-          cout << ", ";
-        cout << Names::FindName(face->GetNetDevice()->GetChannel()->GetDevice(1)->GetNode());
+        if ( face->GetNetDevice()->GetChannel()->GetDevice(1)->GetNode() == node )
+          cout << Names::FindName(face->GetNetDevice()->GetChannel()->GetDevice(0)->GetNode());
+        else
+          cout << Names::FindName(face->GetNetDevice()->GetChannel()->GetDevice(1)->GetNode());
         isFirst = false;
       }
       cout << ")" << endl;

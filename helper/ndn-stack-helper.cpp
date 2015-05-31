@@ -140,6 +140,8 @@ StackHelper::InstallAll() const
 Ptr<FaceContainer>
 StackHelper::Install(Ptr<Node> node) const
 {
+  NS_LOG_FUNCTION(this << " " << node->GetId());
+//  NS_LOG_INFO("Installing Stack on Node " << node->GetId());
   Ptr<FaceContainer> faces = Create<FaceContainer>();
 
   if (node->GetObject<L3Protocol>() != 0) {
@@ -162,7 +164,8 @@ StackHelper::Install(Ptr<Node> node) const
 
   // Aggregate L3Protocol on node (must be after setting ndnSIM CS)
   node->AggregateObject(ndn);
-
+  NS_LOG_INFO("Installing " << node->GetNDevices() << " NetDevices on node " << node->GetId());
+  
   for (uint32_t index = 0; index < node->GetNDevices(); index++) {
     Ptr<NetDevice> device = node->GetDevice(index);
     // This check does not make sense: LoopbackNetDevice is installed only if IP stack is installed,

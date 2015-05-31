@@ -22,11 +22,16 @@
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 #include "ns3/ndnSIM/model/ndn-face.hpp"
-
 #include "ns3/net-device.h"
+#include "fstream"
+#include "ns3/ndnSIM/model/packet-cache.hpp"
+#include "ns3/ndnSIM/model/ndn-link-rtt-calculator.hpp"
 
 namespace ns3 {
 namespace ndn {
+
+class LinkRttCalculator;
+class NetDeviceFace;
 
 /**
  * \ingroup ndn-face
@@ -61,7 +66,10 @@ public: // from nfd::Face
 
   virtual void
   sendData(const Data& data);
-
+  
+  void
+  printRetransmissions();
+  
   virtual void
   close();
 
@@ -73,19 +81,119 @@ public:
    */
   Ptr<NetDevice>
   GetNetDevice() const;
+  
 
 private:
-  void
+  uint32_t
   send(Ptr<Packet> packet);
+  
+  void
+  processHoles();
+  
+  void
+  onReceiveRepeatRequest(Ptr<Packet> &packet);
+  
+  void
+  onRepeatRequestTimeout(uint32_t seqnum);
+  
+  void 
+  processAckList(std::list<uint32_t> ackList);
+  
+  void
+  processRepeatList(std::list<uint32_t> repeatList);
+  
+  void 
+  Retransmit(uint32_t seqnum);
+  
+  void
+  sendNack(uint32_t seqnum);
+  
+  bool
+  IsBetween(uint32_t start, uint32_t givenNum, uint32_t end);
+  
+  void 
+  incSeqCount(uint32_t &seqnum);
+  
+  bool
+  canRetransmit(uint32_t seqnum);
 
+  bool
+  canSendNack(uint32_t seqnum);
+
+  void
+  processIncomingPacket(Ptr<Packet> &packet, Address destAddress ,uint16_t protocol);
+  
+  void
+  updateReceiverState();
+
+  void
+  updateSenderState();
+  
+  void
+  cancelNackTimer(uint32_t seqnum);
+
+  void
+  ackIncomingSeqnum(uint32_t seqnum);
+
+  void
+  dropIncomingPacket(uint32_t seqnum);
+
+  void
+  AckTimerTimeout();
+  
   /// \brief callback from lower layers
   void
   receiveFromNetDevice(Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
                        const Address& from, const Address& to, NetDevice::PacketType packetType);
 
+  enum IOrD
+  {
+      INTEREST,
+      DATA
+  };
+  
 private:
   Ptr<Node> m_node;
   Ptr<NetDevice> m_netDevice; ///< \brief Smart pointer to NetDevice
+  uint32_t m_nextPacketToSend;
+  uint32_t m_windowSize;      //Sequence number range is 0 to m_windowSize - 1
+  
+  uint32_t m_packetExpected;
+  uint32_t m_lastPacketReceived;
+  
+  std::vector<bool> m_isPacketReceived;
+  
+  std::vector<EventId> m_timerEvents;
+  
+  PacketCache m_packetCache;
+  
+  LinkRttCalculator m_rttCalculator;
+
+  const uint32_t m_maxRetransmissions;
+  const uint32_t m_maxNacks;
+
+  std::list<uint32_t> m_toBeAcked;
+   
+  EventId m_ackTimerId;
+  EventId m_dropTimerId;
+
+  const bool m_ackEnabled;
+  
+  std::map<uint32_t, uint32_t> m_retransmissions; //(sequence no.  -  no. of retransmissions) pairs
+  
+  std::map<uint32_t, uint32_t> m_nacksSent;  //(sequence no.  -  no. of nacks sent) pairs
+  std::map<uint32_t, EventId> m_nackTimers;  //(sequence no.  -  nack timer id ) pairs
+
+  ofstream m_retransmissionsFile;
+  ofstream m_nacksFile;
+  ofstream m_receivedNacksFile;
+  ofstream m_receiverDropsFile;
+
+  int m_retransmissionsFd;
+  int m_nacksFd;
+  int m_receivedNacksFd;
+  int m_receiverDropsFd;
+  int m_acksFd;  
 };
 
 } // namespace ndn

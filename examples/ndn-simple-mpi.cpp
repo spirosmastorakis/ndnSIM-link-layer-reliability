@@ -26,9 +26,9 @@
 #include "ns3/mpi-interface.h"
 
 #ifdef NS3_MPI
-#include <mpi.h>
+  #include <mpi.h>
 #else
-#error "ndn-simple-mpi scenario can be compiled only if NS3_MPI is enabled"
+  #error "ndn-simple-mpi scenario can be compiled only if NS3_MPI is enabled"
 #endif
 
 namespace ns3 {
@@ -154,7 +154,7 @@ main(int argc, char* argv[])
     ndn::L3RateTracer::Install(node2, "node2.txt", Seconds(0.5));
   }
 
-  Simulator::Stop(Seconds(400.0));
+  Simulator::Stop(Seconds(40.0));
 
   Simulator::Run();
   Simulator::Destroy();

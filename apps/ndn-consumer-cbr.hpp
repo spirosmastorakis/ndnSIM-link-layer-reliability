@@ -43,6 +43,9 @@ public:
   ConsumerCbr();
   virtual ~ConsumerCbr();
 
+  void
+  StartApplication();
+
 protected:
   /**
    * \brief Constructs the Interest packet and sends it using a callback to the underlying NDN
@@ -65,11 +68,15 @@ protected:
   std::string
   GetRandomize() const;
 
+  void
+  StopTraffic();
+
 protected:
   double m_frequency; // Frequency of interest packets (in hertz)
   bool m_firstTime;
   RandomVariable* m_random;
   std::string m_randomType;
+  Time m_stopTime;
 };
 
 } // namespace ndn

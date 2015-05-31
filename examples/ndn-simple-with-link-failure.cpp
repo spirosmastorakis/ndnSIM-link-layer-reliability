@@ -92,10 +92,13 @@ main(int argc, char* argv[])
   producerHelper.Install(nodes.Get(2)); // last node
 
   // The failure of the link connecting consumer and router will start from seconds 10.0 to 15.0
-  Simulator::Schedule(Seconds(10.0), ndn::LinkControlHelper::FailLink, nodes.Get(0), nodes.Get(1));
-  Simulator::Schedule(Seconds(15.0), ndn::LinkControlHelper::UpLink, nodes.Get(0), nodes.Get(1));
+  Simulator::Schedule(MilliSeconds(1513), ndn::LinkControlHelper::FailLink, nodes.Get(0), nodes.Get(1));
+  Simulator::Schedule(MilliSeconds(1520), ndn::LinkControlHelper::UpLink, nodes.Get(0), nodes.Get(1));
 
-  Simulator::Stop(Seconds(20.0));
+  Simulator::Schedule(MilliSeconds(500), ndn::LinkControlHelper::FailLink, nodes.Get(1), nodes.Get(2));
+  Simulator::Schedule(MilliSeconds(700), ndn::LinkControlHelper::UpLink, nodes.Get(1), nodes.Get(2));
+
+  Simulator::Stop(Seconds(2.0));
 
   Simulator::Run();
   Simulator::Destroy();

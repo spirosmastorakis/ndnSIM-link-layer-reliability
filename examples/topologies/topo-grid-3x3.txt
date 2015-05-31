@@ -12,7 +12,7 @@
 #       ^   	     ^ 	         ^
 #       |            |           |
 #       v            v           v
-#      /-\	    /-\	     /--------\
+#      /-\	        /-\	     /--------\
 #      | |<-------->| |<---->|Producer|
 #      \-/          \-/      \--------/
 
@@ -45,16 +45,16 @@ link
 # metric: routing metric
 # delay:  link delay
 # queue:  MaxPackets for transmission queue on the link (both directions)
-Node0       Node1       1Mbps       1       10ms    10
-Node0       Node3       1Mbps       1       10ms    10
-Node1       Node2       1Mbps       1       10ms    10
-Node1       Node4       1Mbps       1       10ms    10
-Node2       Node5       1Mbps       1       10ms    10
-Node3       Node4       1Mbps       1       10ms    10
-Node3       Node6       1Mbps       1       10ms    10
-Node4       Node5       1Mbps       1       10ms    10
-Node4       Node7       1Mbps       1       10ms    10
-Node5       Node8       1Mbps       1       10ms    10
-Node6       Node7       1Mbps       1       10ms    10
-Node7       Node8       1Mbps       1       10ms    10
+Node0       Node1       100Mbps       1       10ms    50
+Node0       Node3       100Mbps       1       10ms    50
+Node1       Node2       100Mbps       1       10ms    50
+Node1       Node4       100Mbps       1       10ms    50
+Node2       Node5       100Mbps       1       10ms    50
+Node3       Node4       100Mbps       1       10ms    50
+Node3       Node6       100Mbps       1       10ms    50
+Node4       Node5       100Mbps       1       10ms    50
+Node4       Node7       100Mbps       1       10ms    50
+Node5       Node8       100Mbps       1       10ms    50
+Node6       Node7       100Mbps       1       10ms    50
+Node7       Node8       100Mbps       1       10ms    50
 

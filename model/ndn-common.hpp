@@ -30,11 +30,23 @@
 #include <ndn-cxx/signature.hpp>
 #include <ndn-cxx/signature-info.hpp>
 #include <ndn-cxx/name.hpp>
+#include <ndn-cxx/link-ack.hpp> 
+#include <ndn-cxx/link-echo.hpp>
+#include <ndn-cxx/link-reply.hpp>
+#include <ndn-cxx/repeat-request.hpp>
 #include <ndn-cxx/data.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
-
+#include <ndn-cxx/link-piggybacked-ack.hpp>
 #include <ndn-cxx/util/time.hpp>
+#include <ndn-cxx/util/event-emitter.hpp> 
+#include <functional>
+#include <iostream>
 
+#include "ns3/log.h"
+#include "ns3/packet.h"
+#include "ns3/node.h"
+#include "ns3/pointer.h"
+ 
 namespace nfd {
 }
 
@@ -62,7 +74,14 @@ using ::ndn::Signature;
 using ::ndn::SignatureInfo;
 using ::ndn::Block;
 using ::ndn::KeyChain;
+using ::ndn::LinkAck;
+using ::ndn::LinkEcho;
+using ::ndn::LinkReply;
+using ::ndn::LinkPbAck;
+using ::ndn::RepeatRequest;
+using namespace std;
 
+using ::ndn::util::EventEmitter;
 namespace nfd = ::nfd;
 
 } // namespace ndn

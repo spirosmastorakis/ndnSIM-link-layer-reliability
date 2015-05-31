@@ -17,32 +17,61 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_NS3_HPP
-#define NDN_NS3_HPP
+#ifndef NDN_LINK_RTT_CALCULATOR_HPP
+#define NDN_LINK_RTT_CALCULATOR_HPP 
 
-#include <ndn-cxx/encoding/block.hpp>
-#include "ns3/packet.h"
-#include "ns3/ptr.h"
-#include <memory>
+#include "ndn-common.hpp"
+#include "ndn-ns3.hpp"
+#include "ns3/net-device.h"
+#include "ndn-l3-protocol.hpp"
+// #include "ndn-net-device-face.hpp"
+#include "ns3/point-to-point-net-device.h"
+#include "ns3/channel.h"
 
 namespace ns3 {
 namespace ndn {
 
-class Convert {
+// class NetDeviceFace;
+class LinkCalculator;
+
+class LinkRttCalculator
+{
 public:
-  template<class T>
-  static std::shared_ptr<const T>
-  FromPacket(Ptr<Packet> packet);
+  LinkRttCalculator(Ptr<Node> node, Ptr<NetDevice> netDevice);
 
-  template<class T>
-  static Ptr<Packet>
-  ToPacket(const T& pkt);
+  void
+  onReceiveLinkReply(Ptr<Packet> packet);
+  
+  void
+  onReceiveLinkEcho(Ptr<Packet> &pkt, Address destAddress, uint16_t protocol);
+          
+  void
+  CalculateRtt();
 
-  static uint32_t
-  getPacketType(Ptr<const Packet> packet);
+  Time
+  getMeanRtt();
+
+  Time
+  getVarRtt();
+
+private:
+	void
+  sendLinkEcho ();
+
+  void
+  LinkEchoTimeout();
+  
+  uint32_t m_nonce;
+  EventId m_rttTimerId;
+	Time m_rttTimerValue;
+	Time m_meanRtt;
+	Time m_varRtt;
+  bool m_isRttCalculated;
+	Ptr<Node> m_node;
+  Ptr<NetDevice> m_netDevice;  
 };
 
-} // namespace ndn
-} // namespace ns3
+}
+}
 
-#endif
+#endif //NDN_LINK_RTT_CALCULATOR_HPP

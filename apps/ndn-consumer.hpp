@@ -89,6 +89,14 @@ public:
   virtual void
   WillSendOutInterest(uint32_t sequenceNumber);
 
+private:
+
+  void
+  IncreaseRetransmissionCount(uint32_t seqnum);
+
+  void
+  PrintRetransmissions();
+
 protected:
   // from App
   virtual void
@@ -201,6 +209,11 @@ protected:
     m_lastRetransmittedInterestDataDelay;
   TracedCallback<Ptr<App> /* app */, uint32_t /* seqno */, Time /* delay */,
                  uint32_t /*retx count*/, int32_t /*hop count*/> m_firstInterestDataDelay;
+
+  std::map<uint32_t, uint32_t> m_retransmissions;
+  std::map<uint32_t, Time> m_totalDelay;
+  
+  Time m_rto;
 
   /// @endcond
 };

@@ -26,13 +26,18 @@
 
 namespace ns3 {
 
+namespace ndn
+{
+  class Consumer;
+}
+
 /**
  * This scenario simulates a very simple network topology:
  *
  *
  *      +----------+     1Mbps      +--------+     1Mbps      +----------+
  *      | consumer | <------------> | router | <------------> | producer |
- *      +----------+         10ms   +--------+          10ms  +----------+
+ *      +----------+      5ms       +--------+      5ms       +----------+
  *
  *
  * Consumer requests data from producer with frequency 10 interests per second
@@ -50,7 +55,7 @@ int
 main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("20Mbps"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("100Mbps"));
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("5ms"));
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("20"));
 
@@ -64,8 +69,8 @@ main(int argc, char* argv[])
 
   // Connecting nodes using two links
   PointToPointHelper p2p;
-  p2p.Install(nodes.Get(0), nodes.Get(1));
-  p2p.Install(nodes.Get(1), nodes.Get(2));
+  NetDeviceContainer d0d1 = p2p.Install(nodes.Get(0), nodes.Get(1));
+  NetDeviceContainer d1d2 = p2p.Install(nodes.Get(1), nodes.Get(2));
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
@@ -81,9 +86,15 @@ main(int argc, char* argv[])
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix("/prefix");
-  consumerHelper.SetAttribute("Frequency", StringValue("100")); // 10 interests a second
-  consumerHelper.Install(nodes.Get(0));                        // first node
-
+  consumerHelper.SetAttribute("Frequency", StringValue("300")); // 300 interests a second
+  consumerHelper.SetAttribute("MaxSeq", IntegerValue(10000));
+  consumerHelper.SetAttribute("Randomize",StringValue("uniform"));
+  consumerHelper.SetAttribute("RTO",TimeValue(MilliSeconds(50)));
+  consumerHelper.SetAttribute("LifeTime",TimeValue(MilliSeconds(50)));
+  
+  ApplicationContainer consumerApps = consumerHelper.Install(nodes.Get(0));   // first node
+  consumerApps.Get(0)->SetStopTime(MilliSeconds(39999));
+  
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   // Producer will reply to all requests starting with /prefix
@@ -91,14 +102,28 @@ main(int argc, char* argv[])
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
   producerHelper.Install(nodes.Get(2)); // last node
 
-  Simulator::Stop(MilliSeconds(100.0));
+  Config::SetDefault ("ns3::RateErrorModel::ErrorRate", DoubleValue (0.05));
+  Config::SetDefault ("ns3::RateErrorModel::ErrorUnit", StringValue ("ERROR_UNIT_PACKET"));
+
+
+  ObjectFactory factory;
+  factory.SetTypeId ("ns3::RateErrorModel");
+  Ptr<ErrorModel> em = factory.Create<ErrorModel> ();
+  d0d1.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  d0d1.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  d1d2.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  d1d2.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  
+  // AsciiTraceHelper ascii;
+  // p2p.EnableAsciiAll (ascii.CreateFileStream ("simple3Trace.tr"));
+  
+  Simulator::Stop(Seconds(40));
 
   Simulator::Run();
   Simulator::Destroy();
 
   return 0;
 }
-
 } // namespace ns3
 
 int

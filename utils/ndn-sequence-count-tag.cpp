@@ -17,32 +17,57 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_NS3_HPP
-#define NDN_NS3_HPP
-
-#include <ndn-cxx/encoding/block.hpp>
-#include "ns3/packet.h"
-#include "ns3/ptr.h"
-#include <memory>
+#include "ndn-sequence-count-tag.hpp"
 
 namespace ns3 {
 namespace ndn {
 
-class Convert {
-public:
-  template<class T>
-  static std::shared_ptr<const T>
-  FromPacket(Ptr<Packet> packet);
+TypeId
+SequenceCountTag::GetTypeId()
+{
+  static TypeId tid =
+    TypeId("ns3::ndn::SequenceCountTag").SetParent<Tag>().AddConstructor<SequenceCountTag>();
+  return tid;
+}
 
-  template<class T>
-  static Ptr<Packet>
-  ToPacket(const T& pkt);
+TypeId
+SequenceCountTag::GetInstanceTypeId() const
+{
+  return SequenceCountTag::GetTypeId();
+}
 
-  static uint32_t
-  getPacketType(Ptr<const Packet> packet);
-};
+uint32_t
+SequenceCountTag::Assign(uint32_t sequenceCount)
+{
+    uint32_t oldSeqCount = m_sequenceCount;
+    m_sequenceCount = sequenceCount;
+    return oldSeqCount;
+}
+
+uint32_t
+SequenceCountTag::GetSerializedSize() const
+{
+  return sizeof(uint32_t);
+}
+
+void
+SequenceCountTag::Serialize(TagBuffer i) const
+{
+  i.WriteU32(m_sequenceCount);
+}
+
+void
+SequenceCountTag::Deserialize(TagBuffer i)
+{
+  m_sequenceCount = i.ReadU32();
+}
+
+void
+SequenceCountTag::Print(std::ostream& os) const
+{
+  os << m_sequenceCount;
+}
 
 } // namespace ndn
 } // namespace ns3
 
-#endif

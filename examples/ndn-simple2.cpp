@@ -30,9 +30,9 @@ namespace ns3 {
  * This scenario simulates a very simple network topology:
  *
  *
- *      +----------+     1Mbps      +--------+     1Mbps      +----------+
- *      | consumer | <------------> | router | <------------> | producer |
- *      +----------+         10ms   +--------+          10ms  +----------+
+ *      +----------+       1Mbps      +----------+
+ *      | consumer |   <------------> | producer |
+ *      +----------+        0.49ms    +----------+
  *
  *
  * Consumer requests data from producer with frequency 10 interests per second
@@ -50,8 +50,8 @@ int
 main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("20Mbps"));
-  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("5ms"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("490000ns"));
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("20"));
 
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
@@ -60,12 +60,11 @@ main(int argc, char* argv[])
 
   // Creating nodes
   NodeContainer nodes;
-  nodes.Create(3);
+  nodes.Create(2);
 
   // Connecting nodes using two links
   PointToPointHelper p2p;
   p2p.Install(nodes.Get(0), nodes.Get(1));
-  p2p.Install(nodes.Get(1), nodes.Get(2));
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
@@ -81,7 +80,7 @@ main(int argc, char* argv[])
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix("/prefix");
-  consumerHelper.SetAttribute("Frequency", StringValue("100")); // 10 interests a second
+  consumerHelper.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
   consumerHelper.Install(nodes.Get(0));                        // first node
 
   // Producer
@@ -89,9 +88,9 @@ main(int argc, char* argv[])
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/prefix");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-  producerHelper.Install(nodes.Get(2)); // last node
+  producerHelper.Install(nodes.Get(1)); // last node
 
-  Simulator::Stop(MilliSeconds(100.0));
+  Simulator::Stop(Seconds(1.0));
 
   Simulator::Run();
   Simulator::Destroy();
