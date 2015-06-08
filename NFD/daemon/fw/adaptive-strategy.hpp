@@ -23,41 +23,59 @@
  * NFD, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NFD_DAEMON_FW_BEST_ROUTE_STRATEGY_HPP
-#define NFD_DAEMON_FW_BEST_ROUTE_STRATEGY_HPP
+#ifndef NFD_ADAPTIVE_STRATEGY_HPP
+#define NFD_ADAPTIVE_STRATEGY_HPP
 
 #include "strategy.hpp"
 
 namespace nfd {
 namespace fw {
 
-/** \brief Best Route strategy version 1
- *
- *  This strategy forwards a new Interest to the lowest-cost nexthop
- *  that is not same as the downstream, and does not violate scope.
- *  Subsequent similar Interests or consumer retransmissions are suppressed
- *  until after InterestLifetime expiry.
- *
- *  \deprecated This strategy is superceded by Best Route strategy version 2,
- *              which allows consumer retransmissions. This version is kept for
- *              comparison purposes and is not recommended for general usage.
- */
-class BestRouteStrategy : public Strategy
+class AdaptiveStrategy : public Strategy
 {
 public:
-  BestRouteStrategy(Forwarder& forwarder, const Name& name = STRATEGY_NAME);
+  AdaptiveStrategy(Forwarder& forwarder, const Name& name = STRATEGY_NAME);
 
   virtual
-  ~BestRouteStrategy();
+  ~AdaptiveStrategy();
 
   virtual void
   afterReceiveInterest(const Face& inFace,
                        const Interest& interest,
                        shared_ptr<fib::Entry> fibEntry,
                        shared_ptr<pit::Entry> pitEntry) DECL_OVERRIDE;
+
   virtual void
   beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,
-                                  const Face& inFace, const Data& data) DECL_OVERRIDE;
+                        const Face& inFace, const Data& data) DECL_OVERRIDE;
+
+  virtual void
+  beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry,
+                                  const Face& inFace, const Data& data);
+  
+private:
+  shared_ptr<Face> lastFace = NULL;;
+  std::vector<std::tuple<FaceId, int>> bw;
+  bool firstTime = true;
+
+  /** \brief StrategyInfo in measurements table
+   */
+  class MtInfo : public StrategyInfo
+  {
+  public:
+    static constexpr int
+    getTypeId()
+    {
+      return 10110;
+    }
+
+    MtInfo();
+
+  public:
+    // faceId, interests sent, data received, fibEntry, inFace, dead
+    std::set<std::tuple<FaceId, int, int, shared_ptr<fib::Entry>, FaceId, bool>> usedFaces;
+  };
+
 public:
   static const Name STRATEGY_NAME;
 };
@@ -65,4 +83,4 @@ public:
 } // namespace fw
 } // namespace nfd
 
-#endif // NFD_DAEMON_FW_BEST_ROUTE_STRATEGY_HPP
+#endif // NFD_ADAPTIVE_STRATEGY_HPP

@@ -177,6 +177,36 @@ public: // attributes
   virtual ndn::nfd::FaceStatus
   getFaceStatus() const;
 
+  long long int
+  getBytes();
+
+  void
+  addBytes(long long int bs);
+
+  void
+  addTotalBytes(long long int bs);
+
+  long long int
+  getTotalBytes();
+
+  void
+  substractBytes(long long int bs);
+
+  void
+  setTotalBytes(long long int bs);
+
+  void
+  addUtilization(long long int bs);
+
+  void
+  substractUtilization(long long int bs);
+
+  long long int
+  getUtilization();
+
+  void
+  setUtilization(long long int bs);
+  
 protected:
   // this is a non-virtual method
   bool
@@ -207,6 +237,9 @@ private:
   bool m_isOnDemand;
   bool m_isFailed;
   uint64_t m_metric;
+  long long int m_bytes;
+  long long int m_totalBytes;
+  long long int m_utilization;
 
   // allow setting FaceId
   friend class FaceTable;

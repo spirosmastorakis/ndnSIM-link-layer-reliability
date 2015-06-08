@@ -141,6 +141,9 @@ private:
   void
   AckTimerTimeout();
   
+  void
+  incBufferSize();
+  
   /// \brief callback from lower layers
   void
   receiveFromNetDevice(Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
@@ -194,6 +197,7 @@ private:
   int m_receivedNacksFd;
   int m_receiverDropsFd;
   int m_acksFd;  
+  int m_iordFd;
 };
 
 } // namespace ndn

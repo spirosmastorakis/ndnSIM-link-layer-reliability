@@ -1,0 +1,38 @@
+# topo-6-node-loss.txt
+
+#            (1) 
+#           /  \
+#(c 0)---- (2)  (4)----(5) 
+#		    \	/			  
+#		     (3)				
+
+# each line in this section represents one router and should have the following data
+
+router
+# node  comment     yPos    xPos
+Node0    NA 		 2		0
+Node1    NA  		 3 		2
+Node2 	 NA 	     2      1		
+Node3 	 NA 		 1      2
+Node4	 NA 	     2 		3
+Node5 	 NA 		 2	    4
+
+# Note that `node` can be any string. It is possible to access to the node by name using Names::Find, see examples.
+
+# link section defines point-to-point links between nodes and characteristics of these links
+link
+
+# Each line should be in the following format (only first two are required, the rest can be omitted)
+# srcNode   dstNode     bandwidth   metric  delay   queue
+# bandwidth: link bandwidth
+# metric: routing metric
+# delay:  link delay
+# queue:  MaxPackets for transmission queue on the link (both directions)
+# error:  comma-separated list, specifying class for ErrorModel and necessary attributes
+
+Node0       Node2       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+Node1       Node2       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+Node1       Node4       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+Node2       Node3       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+Node3       Node4       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+Node4       Node5       50Mbps       1       1ms    100 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05

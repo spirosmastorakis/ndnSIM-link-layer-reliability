@@ -33,6 +33,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/point-to-point-module.h"
+#include "ns3/ndnSIM-module.h"
+#include "model/ndn-net-device-face.hpp"
+
 using namespace std;
 
 NS_LOG_COMPONENT_DEFINE("ndn.NetDeviceFace");
@@ -79,7 +85,7 @@ NetDeviceFace::NetDeviceFace(Ptr<Node> node, const Ptr<NetDevice>& netDevice)
   m_ackTimerId = EventId();
   m_dropTimerId = EventId();
 
-  std::ostringstream s, s2, s3, s4, s5;
+  std::ostringstream s, s2, s3, s4, s5, s6;
   s << "NetDevice-" << m_node->GetId() << "-Retransmissions.txt";
   // m_retransmissionsFile.open(s.str());
   m_retransmissionsFd = open(s.str().c_str(), O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
@@ -98,6 +104,12 @@ NetDeviceFace::NetDeviceFace(Ptr<Node> node, const Ptr<NetDevice>& netDevice)
 
   s5 << "NetDevice-" << m_node->GetId() << "-PureAcks.txt";
   m_acksFd = open(s5.str().c_str(), O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+
+  s6 << "NetDevice-" << m_node->GetId() << "-IorD.txt";     //All interests or data that is sent
+  m_iordFd = open(s6.str().c_str(), O_CREAT|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+
+  this->setTotalBytes(2*1024);
+  incBufferSize();
 }
 
 NetDeviceFace::~NetDeviceFace()
@@ -124,9 +136,37 @@ NetDeviceFace::GetNetDevice() const
   return m_netDevice;
 }
 
+
+void 
+NetDeviceFace::incBufferSize()
+{
+  NS_LOG_FUNCTION(this);
+  setTotalBytes( getTotalBytes() + 1024 );
+  
+  if (m_netDevice->GetChannel()->GetDevice(0)->GetNode() == Names::Find<Node>("Rtr1") 
+      && m_netDevice->GetChannel()->GetDevice(1)->GetNode() == Names::Find<Node>("Rtr2"))
+  {
+    Simulator::Schedule(MicroSeconds(1600), &NetDeviceFace::incBufferSize, this);
+    // std::cout << Simulator::Now() << Names::FindName(m_netDevice->GetChannel()->GetDevice(0)->GetNode()) << "-" << Names::FindName(m_netDevice->GetChannel()->GetDevice(1)->GetNode()) << " " << getTotalBytes() << "Next time : " << Time("5ms") << endl;
+  }
+  else if (m_netDevice->GetChannel()->GetDevice(0)->GetNode() == Names::Find<Node>("Rtr1")
+      && m_netDevice->GetChannel()->GetDevice(1)->GetNode() == Names::Find<Node>("Rtr2"))
+  {
+    Simulator::Schedule(MicroSeconds(1600), &NetDeviceFace::incBufferSize, this);
+    // std::cout << Simulator::Now() << Names::FindName(m_netDevice->GetChannel()->GetDevice(0)->GetNode()) << "-" << Names::FindName(m_netDevice->GetChannel()->GetDevice(1)->GetNode()) << " " << getTotalBytes() << "Next time : " << Time("5ms") << endl;
+  }
+  else
+  {
+    Simulator::Schedule(NanoSeconds(100000), &NetDeviceFace::incBufferSize, this);
+    // std::cout << Simulator::Now() << Names::FindName(m_netDevice->GetChannel()->GetDevice(0)->GetNode()) << "-" << Names::FindName(m_netDevice->GetChannel()->GetDevice(1)->GetNode()) << " " << getTotalBytes() << "Next time : " << Time("0.5ms") << endl;
+  }
+}
+
 void
 NetDeviceFace::printRetransmissions()
 {
+    NS_LOG_FUNCTION(this);
+    
     std::map<uint32_t,uint32_t>::iterator it;
     NS_LOG_INFO("Node " << m_node->GetId() << " Retranmissions. Device : " << m_netDevice->GetAddress());
     for (it = m_retransmissions.begin(); it != m_retransmissions.end(); it++)
@@ -136,6 +176,8 @@ NetDeviceFace::printRetransmissions()
 uint32_t            //Returns the sequence number of the packet sent
 NetDeviceFace::send(Ptr<Packet> packet)
 {
+  NS_LOG_FUNCTION(this);
+    
   NS_ASSERT_MSG(packet->GetSize() <= m_netDevice->GetMtu(),
                 "Packet size " << packet->GetSize() << " exceeds device MTU "
                                << m_netDevice->GetMtu());
@@ -161,6 +203,13 @@ NetDeviceFace::send(Ptr<Packet> packet)
   
   uint32_t seqNum = m_nextPacketToSend;
   incSeqCount(m_nextPacketToSend);
+  
+  ostringstream s;
+  s << seqNum << endl;
+  lseek(m_iordFd,0,SEEK_END);
+  if (write(m_iordFd,s.str().c_str(),s.str().size()) == -1)
+      std::cout << "ERROR" << std::endl;
+
   m_netDevice->Send(packet, m_netDevice->GetBroadcast(), L3Protocol::ETHERNET_FRAME_TYPE);
   return seqNum;
 }
@@ -171,7 +220,7 @@ NetDeviceFace::sendInterest(const Interest& interest)
   NS_LOG_FUNCTION(this << &interest);
 
   this->onSendInterest(interest);
-  NS_LOG_INFO("Node " << m_node->GetId() << ":" << "Sending interest(piggybackedAck)");
+  NS_LOG_DEBUG("Node " << m_node->GetId() << ":" << "Sending interest(piggybackedAck) with name : " << interest.getName());
   
   shared_ptr<LinkPbAck> ack(new LinkPbAck);
   ack->setInterest(interest);
@@ -196,7 +245,7 @@ NetDeviceFace::sendData(const Data& data)
   NS_LOG_FUNCTION(this << &data);
 
   this->onSendData(data);
-  NS_LOG_INFO("Node " << m_node->GetId() << ":" << "Sending Data(PiggybackedAck)");
+  NS_LOG_DEBUG("Node " << m_node->GetId() << ":" << "Sending Data(PiggybackedAck) with name : " << data.getName());
   
   shared_ptr<LinkPbAck> ack(new LinkPbAck);
   ack->setData(data);
@@ -299,6 +348,8 @@ NetDeviceFace::onRepeatRequestTimeout(uint32_t seqnum)
 void 
 NetDeviceFace::processAckList(std::list<uint32_t> ackList)
 {
+  NS_LOG_FUNCTION(this);
+    
     for (std::list<uint32_t>::iterator it = ackList.begin(); it != ackList.end(); it++)
     {
         m_packetCache.erase(*it);
@@ -310,6 +361,8 @@ NetDeviceFace::processAckList(std::list<uint32_t> ackList)
 void
 NetDeviceFace::processRepeatList(std::list<uint32_t> repeatList)
 {
+  NS_LOG_FUNCTION(this);
+    
     for (std::list<uint32_t>::iterator it = repeatList.begin(); it != repeatList.end(); it++)
     {
         NS_LOG_INFO("Node " << m_node->GetId() << ":" << "Process repeat request = " << *it);
@@ -356,10 +409,12 @@ NetDeviceFace::Retransmit(uint32_t expiredSeqnum)
       if (e->containsInterest())
       {
           linkPbAck->setInterest(e->getInterest());
+          NS_LOG_DEBUG("Node " << m_node->GetId() << ":" << "Retransmitting interest with prefix " << e->getInterest().getName());
           this->onSendInterest(e->getInterest());
       }
       else
       {
+          NS_LOG_DEBUG("Node " << m_node->GetId() << ":" << "Retransmitting data with prefix " << e->getData().getName());
           linkPbAck->setData(e->getData());
           this->onSendData(e->getData());
       }
@@ -386,12 +441,16 @@ NetDeviceFace::Retransmit(uint32_t expiredSeqnum)
       // m_retransmissionsFile << "\n " << expiredSeqnum;  
       // m_retransmissionsFile.flush();
       
-      ostringstream s;
+      ostringstream s, s2;
       s << expiredSeqnum << endl;
       lseek(m_retransmissionsFd,0,SEEK_END);
       if (write(m_retransmissionsFd,s.str().c_str(),s.str().size()) == -1)
           std::cout << "ERROR" << std::endl;
 
+      s2 << expiredSeqnum << endl;
+      lseek(m_iordFd,0,SEEK_END);
+      if (write(m_iordFd,s2.str().c_str(),s2.str().size()) == -1)
+          std::cout << "ERROR" << std::endl;
 
       if (m_ackEnabled)
       {
@@ -492,6 +551,11 @@ NetDeviceFace::processIncomingPacket(Ptr<Packet> &packet, Address from, uint16_t
     SequenceCountTag seqTag;
     packet->RemovePacketTag(seqTag);
     
+    FwHopCountTag tag;
+    packet->RemovePacketTag(tag);
+    NS_LOG_DEBUG("Node " << m_node->GetId() << ":" << "Received packet with hop count "<< tag.Get());
+    packet->AddPacketTag(tag);
+    
     uint32_t type = Convert::getPacketType(packet);
     if (type == ::ndn::tlv::Interest)
     {
@@ -554,6 +618,8 @@ NetDeviceFace::processIncomingPacket(Ptr<Packet> &packet, Address from, uint16_t
 void
 NetDeviceFace::ackIncomingSeqnum(uint32_t seqnum)
 {
+    NS_LOG_FUNCTION(this << seqnum);
+    
     if (m_packetExpected <= seqnum)
     {
         NS_LOG_INFO("Node " << m_node->GetId() << ":" << "Processing incoming packet with sequence number " << seqnum);
@@ -574,7 +640,7 @@ NetDeviceFace::ackIncomingSeqnum(uint32_t seqnum)
             tNext = m_rttCalculator.getMeanRtt();
         }
         else
-            tNext = 4 * m_rttCalculator.getMeanRtt();
+            tNext = (7 * m_rttCalculator.getMeanRtt() ) / 2;
         m_ackTimerId = Simulator::Schedule(tNext, &NetDeviceFace::AckTimerTimeout ,this);
     }
 }

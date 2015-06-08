@@ -1,0 +1,96 @@
+
+router
+
+# node  comment     yPos    xPos
+CAIDA		NA 		4 		5 		
+UCI 		NA 		2  		67
+UCLA 		NA 		3 		75
+REMAP 		NA		23 		2
+UA 			NA 		4  		86
+BYU  		NA 		45 		2
+CSU 		NA 		35 		35
+UM 			NA		23 		2
+WU 			NA 		24 		5
+UIUC  		NA 		6 		65
+VERISIGN 	NA 		1 		2
+MICH 		NA	 	13 		64
+NEU 		NA 		23 		67
+URJC 		NA 		30 		35
+LIP6 		NA 		23 		56	 
+NTNU 		NA		14 		5
+SYSTEMX 	NA 		25 		3
+ORANGE 		NA      09 		46
+BASEL 		NA 		35  	63
+PADUA 		NA     	21 		25
+VIENNA 		NA  	15 		15
+PKU			NA 		36 		26
+BUPT 		NA 		1 		5
+ANYANG 		NA 		6 		2
+VASEDA 		NA 		3 		6	
+TONGJI 		NA 		2 		14
+
+link
+
+# srcNode   dstNode     bandwidth   metric      delay   queue
+CAIDA		UCI 		50Mbps			 3 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+CAIDA 		UCLA		50Mbps			 3 		1ms  	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+CAIDA 		UA 			50Mbps			 25 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+CAIDA 		TONGJI 		50Mbps			 93		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05 
+UCI 		UCLA		50Mbps			 1 		1ms 	100	 ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UCI 		REMAP		50Mbps			 1 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UCLA 		REMAP		50Mbps			 1 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UCLA 		CSU			50Mbps			 16 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UCLA 		PKU 		50Mbps			 85 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+REMAP 		UA 			50Mbps			 25  	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+REMAP 		BYU  		50Mbps			 9 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+REMAP 		CSU 		50Mbps			 16 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05 
+UA 			CSU 		50Mbps			 18	 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UA 			WU 			50Mbps			 33 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UA 			UM 			50Mbps			 17 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UA 			VASEDA 		50Mbps			 75		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UA 			BYU 		50Mbps			 30 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BYU 		CSU 		50Mbps			 8 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+CSU 		MICH 		50Mbps			 15 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+CSU 		UIUC 		50Mbps			 14 	1ms		100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+MICH 		UIUC 		50Mbps			 5 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+MICH 		NEU 		50Mbps			 14 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+MICH 		LIP6 		50Mbps			 69 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+MICH		UM			50Mbps 			 12 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05		 
+MICH 		VERISIGN 	50Mbps  		 25  	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UIUC 		PADUA 		50Mbps			 80 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UIUC 		WU 			50Mbps			 9 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+WU 			URJC 		50Mbps			 86 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+WU 			VERISIGN 	50Mbps			 25 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+WU 			UM 			50Mbps			 17 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UM 			NEU 		50Mbps			 21 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UM 			ORANGE 		50Mbps			 56 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+UM 			VERISIGN 	50Mbps			 25 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+NEU 		NTNU 		50Mbps			 62  	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+NEU 		PKU   		50Mbps			 112 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+URJC 		LIP6 		50Mbps			 15 	1ms  	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+URJC 		ORANGE 		50Mbps			 15	 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+URJC 		BASEL 		50Mbps			 9 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+URJC 		PADUA 		50Mbps			 15	 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+LIP6 		NTNU 		50Mbps			 25 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+LIP6 		SYSTEMX 	50Mbps			 2 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+LIP6		BASEL 		50Mbps			 18 	1ms	 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+LIP6 		ORANGE 		50Mbps			 3	 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+ORANGE 		PADUA 		50Mbps			 15 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+ORANGE 		SYSTEMX 	50Mbps			 2 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+ORANGE 		BASEL 		50Mbps			 18 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+ORANGE 		VASEDA  	50Mbps			 144 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+SYSTEMX		NTNU 		50Mbps			 24 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+SYSTEMX		BASEL 		50Mbps			 10	 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BASEL 		NTNU 		50Mbps			 30 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BASEL 		PADUA 		50Mbps			 9 		1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BASEL 		PKU 		50Mbps			 127 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+NTNU 		PKU 		50Mbps			 107 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+PKU 		ANYANG 		50Mbps			 38 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+PKU 		BUPT 		50Mbps			 14 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+PKU 		TONGJI 		50Mbps			 14 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BUPT 		TONGJI 		50Mbps			 18	  	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BUPT 		ANYANG 		50Mbps			 33 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+BUPT 		VASEDA 		50Mbps			 48 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+TONGJI		VASEDA 		50Mbps			 98 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+TONGJI 		ANYANG 		50Mbps			 54 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05
+ANYANG 		VASEDA 		50Mbps			 22 	1ms 	100  ns3::RateErrorModel,ErrorUnit=ERROR_UNIT_PACKET,ErrorRate=0.05

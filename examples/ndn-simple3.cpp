@@ -56,7 +56,7 @@ main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
   Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("100Mbps"));
-  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("5ms"));
+  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("2ms"));
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("20"));
 
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
@@ -65,12 +65,12 @@ main(int argc, char* argv[])
 
   // Creating nodes
   NodeContainer nodes;
-  nodes.Create(3);
+  nodes.Create(2);
 
   // Connecting nodes using two links
   PointToPointHelper p2p;
   NetDeviceContainer d0d1 = p2p.Install(nodes.Get(0), nodes.Get(1));
-  NetDeviceContainer d1d2 = p2p.Install(nodes.Get(1), nodes.Get(2));
+  // NetDeviceContainer d1d2 = p2p.Install(nodes.Get(1), nodes.Get(2));
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
@@ -78,7 +78,7 @@ main(int argc, char* argv[])
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/broadcast");
+  ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/adaptive-strategy");
 
   // Installing applications
 
@@ -87,20 +87,20 @@ main(int argc, char* argv[])
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix("/prefix");
   consumerHelper.SetAttribute("Frequency", StringValue("300")); // 300 interests a second
-  consumerHelper.SetAttribute("MaxSeq", IntegerValue(10000));
+  consumerHelper.SetAttribute("MaxSeq", IntegerValue(5000));
   consumerHelper.SetAttribute("Randomize",StringValue("uniform"));
-  consumerHelper.SetAttribute("RTO",TimeValue(MilliSeconds(50)));
-  consumerHelper.SetAttribute("LifeTime",TimeValue(MilliSeconds(50)));
+  consumerHelper.SetAttribute("RTO",TimeValue(MilliSeconds(60)));
+  consumerHelper.SetAttribute("LifeTime",TimeValue(MilliSeconds(60)));
   
   ApplicationContainer consumerApps = consumerHelper.Install(nodes.Get(0));   // first node
-  consumerApps.Get(0)->SetStopTime(MilliSeconds(39999));
+  consumerApps.Get(0)->SetStopTime(MilliSeconds(79999));
   
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/prefix");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-  producerHelper.Install(nodes.Get(2)); // last node
+  producerHelper.Install(nodes.Get(1)); // last node
 
   Config::SetDefault ("ns3::RateErrorModel::ErrorRate", DoubleValue (0.05));
   Config::SetDefault ("ns3::RateErrorModel::ErrorUnit", StringValue ("ERROR_UNIT_PACKET"));
@@ -111,13 +111,13 @@ main(int argc, char* argv[])
   Ptr<ErrorModel> em = factory.Create<ErrorModel> ();
   d0d1.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
   d0d1.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
-  d1d2.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
-  d1d2.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  // d1d2.Get (0)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
+  // d1d2.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
   
   // AsciiTraceHelper ascii;
-  // p2p.EnableAsciiAll (ascii.CreateFileStream ("simple3Trace.tr"));
+  // p2p.EnableAsciiAll (ascii.CreateFileStream ("simpleTrace.tr"));
   
-  Simulator::Stop(Seconds(40));
+  Simulator::Stop(Seconds(80));
 
   Simulator::Run();
   Simulator::Destroy();

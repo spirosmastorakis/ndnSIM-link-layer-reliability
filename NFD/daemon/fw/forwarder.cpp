@@ -130,6 +130,9 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   // FIB lookup
   shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
 
+  const_cast<Face&>(inFace).addBytes(1024);
+  const_cast<Face&>(inFace).addUtilization(1024);
+
   // dispatch to strategy
   this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
                                           cref(inFace), cref(interest), fibEntry, pitEntry));
@@ -189,6 +192,9 @@ Forwarder::onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace,
     return;
   }
 
+  const_cast<Face&>(outFace).addBytes(1024);
+  const_cast<Face&>(outFace).addUtilization(1024);
+
   // pick Interest
   const pit::InRecordCollection& inRecords = pitEntry->getInRecords();
   pit::InRecordCollection::const_iterator pickedInRecord = std::max_element(
@@ -234,6 +240,7 @@ Forwarder::onInterestUnsatisfied(shared_ptr<pit::Entry> pitEntry)
   NFD_LOG_DEBUG("onInterestUnsatisfied interest=" << pitEntry->getName());
 
   // invoke PIT unsatisfied callback
+  // const_cast<Face&>(inFace).substractUtilization(1024);
   beforeExpirePendingInterest(*pitEntry);
   this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeExpirePendingInterest, _1,
                                           pitEntry));
@@ -264,7 +271,8 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
   NFD_LOG_DEBUG("onIncomingData face=" << inFace.getId() << " data=" << data.getName());
   const_cast<Data&>(data).setIncomingFaceId(inFace.getId());
   ++m_counters.getNInDatas();
-
+  const_cast<Face&>(inFace).substractUtilization(1024); 
+    
   // /localhost scope control
   bool isViolatingLocalhost = !inFace.isLocal() &&
                               LOCALHOST_NAME.isPrefixOf(data.getName());

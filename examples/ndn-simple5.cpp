@@ -17,17 +17,6 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-/*
- * This scenario simulates a grid topology (using topology reader module)
- *
- * (consumer) -- ( ) ----- ( )
- *     |          |         |
- *    ( ) ------ ( ) ----- ( )
- *     |          |         |
- *    ( ) ------ ( ) -- (producer)
- *
- */
-
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
@@ -47,6 +36,11 @@ namespace ndn
   class Consumer;
 }
 
+void
+packetDropCallback(const Ptr<const Packet> packet)
+{
+  std::cout << "Packet Drop" << std::endl;
+}
 
 int
 main()
@@ -57,7 +51,7 @@ main()
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("100"));
 
   AnnotatedTopologyReader topologyReader("", 25);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-grid-3x3-loss.txt");
+  topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-6-node-loss.txt");
   topologyReader.Read();
 
   // Install NDN stack on all nodes
@@ -65,44 +59,63 @@ main()
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/prefix", "ndn:/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/prefix1", "ndn:/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/prefix2", "ndn:/localhost/nfd/strategy/best-route");
+  
   
   // Getting containers for the consumer/producer
-  Ptr<Node> producer = Names::Find<Node>("Node8");
-  NodeContainer consumerNodes;
-  consumerNodes.Add(Names::Find<Node>("Node0"));
+  Ptr<Node> producer1 = Names::Find<Node>("Dst1");
+  Ptr<Node> producer2 = Names::Find<Node>("Dst2");
+  
+  Ptr<Node> consumer1 = Names::Find<Node>("Src1");
+  Ptr<Node> consumer2 = Names::Find<Node>("Src2");
+
 
   // Consumer
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
   // Consumer will request /prefix/0, /prefix/1, ...
-  consumerHelper.SetPrefix("/prefix");
   consumerHelper.SetAttribute("Frequency", StringValue("500")); // 500 interests a second
   consumerHelper.SetAttribute("MaxSeq", IntegerValue(10000));
   consumerHelper.SetAttribute("Randomize",StringValue("uniform"));
   consumerHelper.SetAttribute("RTO",TimeValue(MilliSeconds(24)));
   consumerHelper.SetAttribute("LifeTime",TimeValue(MilliSeconds(24)));
   
-  ApplicationContainer consumerApps = consumerHelper.Install(consumerNodes);     // first node
-  consumerApps.Get(0)->SetStopTime(MilliSeconds(39999));
+  consumerHelper.SetPrefix("/prefix1");
+  ApplicationContainer consumerApps1 = consumerHelper.Install(consumer1);     // first node
+  consumerApps1.Get(0)->SetStopTime(MilliSeconds(39999));
+
+  consumerHelper.SetPrefix("/prefix2");
+  ApplicationContainer consumerApps2 = consumerHelper.Install(consumer2);     // first node
+  consumerApps2.Get(0)->SetStopTime(MilliSeconds(39999));
 
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
-  // Producer will reply to all requests starting with /prefix
-  producerHelper.SetPrefix("/prefix");
-  producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-  producerHelper.Install(producer); // last node
+  // Producer will reply to all requests starting with /prefix1
+  producerHelper.SetAttribute("PayloadSize", StringValue("800"));
+  
+  producerHelper.SetPrefix("/prefix1");
+  producerHelper.Install(producer1); 
+
+  producerHelper.SetPrefix("/prefix2");
+  producerHelper.Install(producer2);
 
 
   GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-  ndnGlobalRoutingHelper.AddOrigins("/prefix", producer);
+  ndnGlobalRoutingHelper.AddOrigins("/prefix1", producer1);
+  ndnGlobalRoutingHelper.AddOrigins("/prefix2", producer2);
+  
   GlobalRoutingHelper::CalculateRoutes();
+
+  Config::ConnectWithoutContext("/NodeList/2/DeviceList/2/$ns3::PointToPointNetDevice/TxQueue/Drop", MakeCallback(&packetDropCallback));
+  Config::ConnectWithoutContext("/NodeList/2/DeviceList/1/$ns3::PointToPointNetDevice/TxQueue/Drop", MakeCallback(&packetDropCallback));
+  Config::ConnectWithoutContext("/NodeList/2/DeviceList/0/$ns3::PointToPointNetDevice/TxQueue/Drop", MakeCallback(&packetDropCallback));
 
   // AsciiTraceHelper ascii;
   // p2p.EnableAsciiAll (ascii.CreateFileStream ("simple3Trace.tr"));
   
   Simulator::Stop(Seconds(42));
-
+  
   Simulator::Run();
   Simulator::Destroy();
   return 0;

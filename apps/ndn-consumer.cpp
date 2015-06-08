@@ -63,7 +63,7 @@ Consumer::GetTypeId(void)
 
       .AddAttribute("RetxTimer",
                     "Timeout defining how frequent retransmission timeouts should be checked",
-                    StringValue("20ms"),
+                    StringValue("5ms"),
                     MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
                     MakeTimeChecker())
 
@@ -93,7 +93,7 @@ Consumer::Consumer()
   NS_LOG_FUNCTION_NOARGS();
 
   m_rtt = CreateObject<RttMeanDeviation>();
-  m_rtt->SetMaxRto(MilliSeconds(200));
+  // m_rtt->SetMaxRto(MilliSeconds(200));
 }
 
 void
@@ -123,7 +123,7 @@ Consumer::CheckRetxTimeout()
   Time rto = m_rto;
 
   // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
-  //std::cout << "check retx timeout - RTO " << rto << std::endl;
+  // std::cout << "check retx timeout - RTO " << rto << std::endl;
   
   while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
@@ -246,7 +246,7 @@ Consumer::OnData(shared_ptr<const Data> data)
     FwHopCountTag hopCountTag;
     if (ns3PacketTag->getPacket()->PeekPacketTag(hopCountTag)) {
       hopCount = hopCountTag.Get();
-      NS_LOG_DEBUG("Hop count: " << hopCount);
+      NS_LOG_INFO("Hop count: " << hopCount);
     }
   }
 
@@ -281,7 +281,7 @@ Consumer::OnTimeout(uint32_t sequenceNumber)
   NS_LOG_FUNCTION(sequenceNumber);
   // ////std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current RTO: " <<
   // m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
-  ////std::cout << "Ontimeout" << sequenceNumber << std::endl;
+  std::cout << "Ontimeout" << sequenceNumber << std::endl;
   m_rtt->IncreaseMultiplier(); // Double the next RTO
   m_rtt->SentSeq(SequenceNumber32(sequenceNumber),
                  1); // make sure to disable RTT calculation for this sample
@@ -335,7 +335,6 @@ Consumer::PrintRetransmissions()
 //    NS_LOG_INFO("Delay : " << it->first << "  ->  " << it->second);
     if (it != m_totalDelay.begin())
       dFile << ",";
-    dFile << float((it->second).GetMicroSeconds())/1000;
     
     if ( m_seqTimeouts.find(it->first) == m_seqTimeouts.end() ) //If the interest is satisfied
         delay = it->second;
@@ -343,6 +342,8 @@ Consumer::PrintRetransmissions()
     else
         delay = Simulator::Now() - it->second;
     
+    dFile << float(delay.GetMicroSeconds())/1000;
+
     if (it != m_totalDelay.begin())
         totalDelay += delay;
     else

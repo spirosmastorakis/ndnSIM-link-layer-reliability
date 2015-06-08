@@ -52,11 +52,14 @@ BestRouteStrategy::afterReceiveInterest(const Face& inFace,
                    shared_ptr<fib::Entry> fibEntry,
                    shared_ptr<pit::Entry> pitEntry)
 {
+    
   if (pitEntry->hasUnexpiredOutRecords()) {
     // not a new Interest, don't forward
     return;
   }
-
+  // const_cast<Face&>(inFace).addBytes(1024);
+  // const_cast<Face&>(inFace).addUtilization(1024);
+  
   const fib::NextHopList& nexthops = fibEntry->getNextHops();
   fib::NextHopList::const_iterator it = std::find_if(nexthops.begin(), nexthops.end(),
     bind(&predicate_PitEntry_canForwardTo_NextHop, pitEntry, _1));
@@ -67,7 +70,16 @@ BestRouteStrategy::afterReceiveInterest(const Face& inFace,
   }
 
   shared_ptr<Face> outFace = it->getFace();
+  // outFace->addBytes(1024);
+  // outFace->addUtilization(1024);
   this->sendInterest(pitEntry, outFace);
+}
+
+void
+BestRouteStrategy::beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,
+                                  const Face& inFace, const Data& data)
+{
+  // const_cast<Face&>(inFace).substractBytes(1024);
 }
 
 } // namespace fw

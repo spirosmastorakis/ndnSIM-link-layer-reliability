@@ -52,11 +52,11 @@ RttEstimator::GetTypeId(void)
       .AddAttribute("MaxMultiplier", "Maximum RTO Multiplier", UintegerValue(64),
                     MakeUintegerAccessor(&RttEstimator::m_maxMultiplier),
                     MakeUintegerChecker<uint16_t>())
-      .AddAttribute("InitialEstimation", "Initial RTT estimation", TimeValue(Seconds(1.0)),
+      .AddAttribute("InitialEstimation", "Initial RTT estimation", TimeValue(MilliSeconds(20.0)),
                     MakeTimeAccessor(&RttEstimator::m_initialEstimatedRtt), MakeTimeChecker())
       .AddAttribute("MinRTO", "Minimum retransmit timeout value",
                     TimeValue(
-                      Seconds(0.2)), // RFC2988 says min RTO=1 sec, but Linux uses 200ms. See
+                      Seconds(0.02)), // RFC2988 says min RTO=1 sec, but Linux uses 200ms. See
                     // http://www.postel.org/pipermail/end2end-interest/2004-November/004402.html
                     MakeTimeAccessor(&RttEstimator::SetMinRto, &RttEstimator::GetMinRto),
                     MakeTimeChecker())

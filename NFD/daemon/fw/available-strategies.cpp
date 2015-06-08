@@ -28,7 +28,8 @@
 #include "client-control-strategy.hpp"
 #include "ncc-strategy.hpp"
 #include "best-route-strategy2.hpp"
-
+#include "adaptive-strategy.hpp"
+ 
 namespace nfd {
 namespace fw {
 
@@ -56,6 +57,7 @@ installStrategies(Forwarder& forwarder)
   installStrategy<ClientControlStrategy>(forwarder);
   installStrategy<NccStrategy>(forwarder);
   installStrategy<BestRouteStrategy2>(forwarder);
+  installStrategy<AdaptiveStrategy>(forwarder);
 }
 
 } // namespace fw

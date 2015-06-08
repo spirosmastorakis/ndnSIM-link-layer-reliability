@@ -106,11 +106,11 @@ Time
 RttMeanDeviation::RetransmitTimeout()
 {
   NS_LOG_FUNCTION(this);
-
+  // m_multiplier = 1;
   double retval = std::min(m_maxRto.ToDouble(Time::S),
                            std::max(m_multiplier * m_minRto.ToDouble(Time::S),
                                     m_multiplier * (m_currentEstimatedRtt.ToDouble(Time::S)
-                                                    + 4 * m_variance.ToDouble(Time::S))));
+                                                    + 2 * m_variance.ToDouble(Time::S))));
 
   NS_LOG_DEBUG("RetransmitTimeout:  return " << retval);
 

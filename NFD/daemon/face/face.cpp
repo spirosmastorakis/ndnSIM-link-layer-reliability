@@ -40,7 +40,13 @@ Face::Face(const FaceUri& remoteUri, const FaceUri& localUri, bool isLocal)
   onReceiveInterest += [this](const ndn::Interest&) { ++m_counters.getNInInterests(); };
   onReceiveData     += [this](const ndn::Data&) {     ++m_counters.getNInDatas(); };
   onSendInterest    += [this](const ndn::Interest&) { ++m_counters.getNOutInterests(); };
-  onSendData        += [this](const ndn::Data&) {     ++m_counters.getNOutDatas(); };
+  onSendData        += [this](const ndn::Data&) {     ++m_counters.getNOutDatas();  /*substractBytes(1024);*/ 
+                                                      substractUtilization(1024);
+                                                };
+  
+  setTotalBytes(1024);
+  m_bytes = 0;
+  setUtilization(0);
 }
 
 Face::~Face()
@@ -82,6 +88,68 @@ bool
 Face::isUp() const
 {
   return true;
+}
+
+long long int
+Face::getBytes()
+{
+  return m_bytes;
+}
+
+void
+Face::addBytes(long long int bs)
+{
+  m_bytes = m_bytes + bs;
+  // std::cout << getId() << "add" << std::endl;
+}
+
+void
+Face::substractBytes(long long int bs)
+{
+  m_bytes = m_bytes - bs;
+  // std::cout << getId() << "sub" << std::endl;
+}
+
+void
+Face::addTotalBytes(long long int bs)
+{
+  m_totalBytes = m_totalBytes + bs;
+}
+
+long long int
+Face::getTotalBytes()
+{
+  return m_totalBytes;
+}
+
+void
+Face::setTotalBytes(long long int bs)
+{
+  m_totalBytes = bs;
+}
+
+void
+Face::addUtilization(long long int bs)
+{
+  m_utilization += bs;
+}
+
+void
+Face::substractUtilization(long long int bs)
+{
+  m_utilization -= bs;
+}
+
+long long int
+Face::getUtilization()
+{
+  return m_utilization;
+}
+
+void
+Face::setUtilization(long long int bs)
+{
+  m_utilization = bs;
 }
 
 bool
